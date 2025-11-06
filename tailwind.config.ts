@@ -13,6 +13,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -57,6 +60,16 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        alert: {
+          high: "hsl(var(--alert-high))",
+          medium: "hsl(var(--alert-medium))",
+          low: "hsl(var(--alert-low))",
+        },
+        neon: {
+          teal: "hsl(var(--neon-teal))",
+          magenta: "hsl(var(--neon-magenta))",
+          red: "hsl(var(--neon-red))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -84,6 +97,8 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "detection-enter": "detection-enter 0.3s ease-out",
       },
     },
   },

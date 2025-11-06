@@ -1,73 +1,89 @@
-# Welcome to your Lovable project
+# VigilantAI — Live Surveillance System
 
-## Project info
+AI-powered CCTV monitoring dashboard with real-time threat detection.
 
-**URL**: https://lovable.dev/projects/fe4fb18f-790c-4c8f-89d3-7ea575bf0242
+## Features
 
-## How can I edit this code?
+- **3×3 CCTV Grid**: Live feeds from 9 cameras with simulated detection events
+- **AI Detection Overlays**: Bounding boxes with risk-based color coding (red/orange/yellow)
+- **Real-time Notifications**: Persistent alerts panel with actionable buttons
+- **Modal Expansion**: Click any tile to view full-screen feed with timeline
+- **Accessibility**: Keyboard navigation, ARIA labels, AA color contrast
+- **Data Export**: JSON export of all logged alerts and timestamps
 
-There are several ways of editing your application.
+## Detection Types
 
-**Use Lovable**
+- `THEFT` — Unauthorized item removal
+- `FIGHT` — Physical altercation
+- `ROBBERY` — Armed or forced theft
+- `FALL` — Person falling (injury risk)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/fe4fb18f-790c-4c8f-89d3-7ea575bf0242) and start prompting.
+## Alert Lifecycle
 
-Changes made via Lovable will be committed automatically to this repo.
+1. **Detection**: AI overlays appear with fade+scale animation
+2. **Notification**: Alert added to right panel, toast shown
+3. **Highlight**: Camera tile border pulses briefly
+4. **Auto-clear**: Detection overlay disappears after 8 seconds
+5. **Actions**: User can `Dismiss` or `Report false positive`
 
-**Use your preferred IDE**
+## Keyboard Shortcuts
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- `Enter` / `Space`: Expand focused camera tile
+- `Esc`: Close expanded modal
+- `Tab`: Navigate between tiles and buttons
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Settings
 
-Follow these steps:
+- **Auto-acknowledge**: Automatically dismiss alerts after timeout
+- **Sensitivity**: Adjust detection threshold (Low/Medium/High)
+- **Export Data**: Download JSON file of all alerts
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Sample Alert JSON
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```json
+{
+  "notifications": [
+    {
+      "cameraId": 4,
+      "type": "THEFT",
+      "confidence": 92,
+      "timestamp": "2025-01-10T14:32:15.000Z"
+    }
+  ],
+  "exportedAt": "2025-01-10T14:35:00.000Z"
+}
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Tech Stack
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+- **React** + **TypeScript**
+- **Tailwind CSS** with custom design tokens
+- **shadcn/ui** components
+- **Lucide React** icons
+
+## Design System
+
+### Colors (HSL)
+- Primary (Neon Teal): `176 100% 41%`
+- Accent (Magenta): `327 100% 64%`
+- Alert High (Red): `2 100% 60%`
+- Alert Medium (Orange): `30 100% 50%`
+- Alert Low (Yellow): `50 100% 50%`
+- Background: `220 20% 8%`
+
+### Effects
+- **Glassmorphism**: `backdrop-blur(10px)` with translucent backgrounds
+- **Scanlines**: Repeating gradient overlays for CCTV realism
+- **Film Grain**: SVG noise filter at 5% opacity
+- **Neon Glow**: Box shadows with HSL alpha for risk levels
+
+## Development
+
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## License
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/fe4fb18f-790c-4c8f-89d3-7ea575bf0242) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+MIT
