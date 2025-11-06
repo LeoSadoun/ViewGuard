@@ -88,7 +88,8 @@ const NotificationsPanel = ({ notifications, onDismiss, onReport }: Notification
                 </Button>
                 <Button
                   size="sm"
-                  className="flex-1 h-7 text-xs bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                  variant="secondary"
+                  className="flex-1 h-7 text-xs"
                   onClick={() => onReport(notification.id)}
                   aria-label="Report false positive"
                 >

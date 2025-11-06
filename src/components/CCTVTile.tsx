@@ -18,9 +18,10 @@ interface CCTVTileProps {
   detection: Detection | null;
   onExpand: () => void;
   isHighlighted?: boolean;
+  videoSource?: string;
 }
 
-const CCTVTile = ({ cameraId, detection, onExpand, isHighlighted }: CCTVTileProps) => {
+const CCTVTile = ({ cameraId, detection, onExpand, isHighlighted, videoSource }: CCTVTileProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const getRiskLevel = (confidence: number) => {
@@ -54,9 +55,10 @@ const CCTVTile = ({ cameraId, detection, onExpand, isHighlighted }: CCTVTileProp
 
   return (
     <div
-      className={`relative aspect-video bg-card border-2 ${getBorderClass()} rounded-lg overflow-hidden cursor-pointer transition-all duration-300 ${
+      className={`relative bg-card border-2 ${getBorderClass()} rounded-lg overflow-hidden cursor-pointer transition-all duration-300 ${
         isHovered ? "scale-105 z-10" : ""
       }`}
+      style={{ aspectRatio: '16/10' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onExpand}
@@ -67,10 +69,20 @@ const CCTVTile = ({ cameraId, detection, onExpand, isHighlighted }: CCTVTileProp
     >
       {/* CCTV Feed Background */}
       <div className="absolute inset-0 bg-muted scanline film-grain">
-        {/* Simulated static CCTV image */}
-        <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
-          <Eye className="w-12 h-12" />
-        </div>
+        {videoSource ? (
+          <video
+            src={videoSource}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
+            <Eye className="w-12 h-12" />
+          </div>
+        )}
       </div>
 
       {/* Timestamp Overlay */}
