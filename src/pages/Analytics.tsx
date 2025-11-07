@@ -58,10 +58,42 @@ const Analytics = () => {
   ];
 
   const detectionTypes = [
-    { name: "THEFT", value: 45, color: "hsl(var(--alert-high))" },
-    { name: "FIGHT", value: 28, color: "hsl(var(--alert-medium))" },
-    { name: "ROBBERY", value: 18, color: "hsl(var(--alert-low))" },
-    { name: "FALL", value: 9, color: "hsl(var(--primary))" },
+    { 
+      name: "THEFT", 
+      value: 45, 
+      color: "hsl(var(--alert-high))",
+      cameras: ["CAM 1", "CAM 4", "CAM 6", "CAM 8"],
+      topCamera: "CAM 4",
+      topCameraCount: 12,
+      avgResponseTime: "2.1s"
+    },
+    { 
+      name: "FIGHT", 
+      value: 28, 
+      color: "hsl(var(--alert-medium))",
+      cameras: ["CAM 2", "CAM 3", "CAM 7"],
+      topCamera: "CAM 3",
+      topCameraCount: 11,
+      avgResponseTime: "1.8s"
+    },
+    { 
+      name: "ROBBERY", 
+      value: 18, 
+      color: "hsl(var(--alert-low))",
+      cameras: ["CAM 1", "CAM 5", "CAM 9"],
+      topCamera: "CAM 1",
+      topCameraCount: 8,
+      avgResponseTime: "2.5s"
+    },
+    { 
+      name: "FALL", 
+      value: 9, 
+      color: "hsl(var(--primary))",
+      cameras: ["CAM 2", "CAM 6"],
+      topCamera: "CAM 6",
+      topCameraCount: 6,
+      avgResponseTime: "1.5s"
+    },
   ];
 
   const heatmapData = [
@@ -289,17 +321,53 @@ const Analytics = () => {
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
+                  className="cursor-pointer"
                 >
                   {detectionTypes.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color}
+                      className="hover:opacity-80 transition-opacity"
+                    />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    color: "hsl(var(--foreground))",
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-card border border-border rounded-lg p-4 shadow-lg">
+                          <h3 className="font-bold text-foreground text-lg mb-2">
+                            {data.name}
+                          </h3>
+                          <div className="space-y-1 text-sm">
+                            <p className="text-muted-foreground">
+                              Total Incidents: <span className="text-foreground font-semibold">{data.value}</span>
+                            </p>
+                            <p className="text-muted-foreground">
+                              Top Camera: <span className="text-foreground font-semibold">{data.topCamera}</span> ({data.topCameraCount} incidents)
+                            </p>
+                            <p className="text-muted-foreground">
+                              Avg Response: <span className="text-foreground font-semibold">{data.avgResponseTime}</span>
+                            </p>
+                            <div className="mt-2 pt-2 border-t border-border">
+                              <p className="text-muted-foreground text-xs mb-1">Active Cameras:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {data.cameras.map((cam: string) => (
+                                  <span 
+                                    key={cam}
+                                    className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded"
+                                  >
+                                    {cam}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
                   }}
                 />
               </PieChart>
