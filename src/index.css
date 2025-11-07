@@ -45,8 +45,8 @@ All colors MUST be HSL.
     --alert-low: 50 100% 50%;
 
     /* Glassmorphism */
-    --glass-bg: 220 18% 12% / 0.7;
-    --glass-border: 220 10% 30% / 0.3;
+    --glass-bg: 220 20% 9% / 0.6;
+    --glass-border: 220 10% 25% / 0.2;
 
     /* Neon Glow */
     --neon-teal: 176 100% 41%;
