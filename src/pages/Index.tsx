@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Activity, BarChart3, Video } from "lucide-react";
+import { Shield, BarChart3, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -80,17 +80,32 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
+    <div className="min-h-screen bg-background p-4 md:p-6 cyber-bg">
+      {/* Floating particles */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-primary rounded-full"
+            style={{
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 10}s`,
+              animation: "float-particle 15s linear infinite",
+            }}
+          />
+        ))}
+      </div>
+
       {/* Header */}
-      <header className="mb-6">
+      <header className="mb-6 relative z-10">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded bg-primary flex items-center justify-center">
-              <Activity className="w-6 h-6 text-primary-foreground" />
+            <div className="w-10 h-10 rounded bg-primary/20 border border-primary flex items-center justify-center glow-cyber">
+              <Shield className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">VigilantAI</h1>
-              <p className="text-xs text-muted-foreground">Live Surveillance System</p>
+              <h1 className="text-2xl font-bold text-foreground tracking-wider">VIGILANT<span className="text-primary">AI</span></h1>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest">Neural Surveillance Grid</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -114,7 +129,7 @@ const Index = () => {
       </header>
 
       {/* Main Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 relative z-10">
         {/* Left: CCTV Grid */}
         <div>
           {/* CCTV Grid */}

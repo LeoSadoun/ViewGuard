@@ -264,4 +264,65 @@ All colors MUST be HSL.
   .glitch {
     animation: glitch 0.3s ease-in-out;
   }
+
+  /* Cyberpunk Animated Background */
+  .cyber-bg {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cyber-bg::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background-image: 
+      linear-gradient(hsl(180 100% 50% / 0.03) 2px, transparent 2px),
+      linear-gradient(90deg, hsl(180 100% 50% / 0.03) 2px, transparent 2px);
+    background-size: 50px 50px;
+    animation: grid-move 20s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .cyber-bg::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, transparent 0%, hsl(220 25% 4%) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes grid-move {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(-50px, -50px);
+    }
+  }
+
+  /* Floating particles */
+  @keyframes float-particle {
+    0%, 100% {
+      transform: translateY(0) translateX(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100vh) translateX(20px);
+      opacity: 0;
+    }
+  }
 }
