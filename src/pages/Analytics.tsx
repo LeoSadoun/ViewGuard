@@ -117,7 +117,7 @@ const Analytics = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card className="glass border-border">
+        <Card className="bg-primary/10 border-primary/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary" />
@@ -130,7 +130,7 @@ const Analytics = () => {
           </CardContent>
         </Card>
 
-        <Card className="glass border-border">
+        <Card className="bg-primary/10 border-primary/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-alert-high" />
@@ -143,7 +143,7 @@ const Analytics = () => {
           </CardContent>
         </Card>
 
-        <Card className="glass border-border">
+        <Card className="bg-primary/10 border-primary/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <MapPin className="w-4 h-4 text-accent" />
@@ -156,7 +156,7 @@ const Analytics = () => {
           </CardContent>
         </Card>
 
-        <Card className="glass border-border">
+        <Card className="bg-primary/10 border-primary/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Clock className="w-4 h-4 text-primary" />
@@ -173,7 +173,7 @@ const Analytics = () => {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Detection Trends */}
-        <Card className="glass border-border">
+        <Card className="bg-primary/10 border-primary/20">
           <CardHeader>
             <CardTitle className="text-foreground">Detection Trends</CardTitle>
             <CardDescription>Incidents over time by type</CardDescription>
@@ -233,7 +233,7 @@ const Analytics = () => {
         </Card>
 
         {/* Camera Activity */}
-        <Card className="glass border-border">
+        <Card className="bg-primary/10 border-primary/20">
           <CardHeader>
             <CardTitle className="text-foreground">Camera Activity</CardTitle>
             <CardDescription>Total incidents per camera</CardDescription>
@@ -268,7 +268,7 @@ const Analytics = () => {
       {/* Detection Types & Heatmap */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Detection Types Distribution */}
-        <Card className="glass border-border">
+        <Card className="bg-primary/10 border-primary/20">
           <CardHeader>
             <CardTitle className="text-foreground">Detection Types</CardTitle>
             <CardDescription>Distribution of incident types</CardDescription>
@@ -305,7 +305,7 @@ const Analytics = () => {
         </Card>
 
         {/* Heatmap */}
-        <Card className="glass border-border">
+        <Card className="bg-primary/10 border-primary/20">
           <CardHeader>
             <CardTitle className="text-foreground">Incident Heatmap</CardTitle>
             <CardDescription>Hotspot zones across time periods</CardDescription>

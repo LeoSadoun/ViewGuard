@@ -17,7 +17,7 @@ interface NotificationsPanelProps {
 
 const NotificationsPanel = ({ notifications, onDismiss, onReport }: NotificationsPanelProps) => {
   return (
-    <div className="glass rounded-lg p-4 h-full flex flex-col">
+    <div className="bg-primary/10 rounded-lg p-4 h-full flex flex-col border border-primary/20">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-primary" />
@@ -38,7 +38,7 @@ const NotificationsPanel = ({ notifications, onDismiss, onReport }: Notification
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className="glass rounded-lg p-3 border border-border hover:border-primary/50 transition-colors"
+              className="bg-primary/10 rounded-lg p-3 border border-primary/20 hover:border-primary/50 transition-colors"
               role="article"
               aria-label={`Alert: ${notification.detection.type} detected on Camera ${notification.cameraId}`}
             >

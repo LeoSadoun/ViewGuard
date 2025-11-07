@@ -26,7 +26,7 @@ const ControlsPanel = ({
   onExport,
 }: ControlsPanelProps) => {
   return (
-    <div className="glass rounded-lg p-4">
+    <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
       <div className="flex items-center gap-2 mb-4">
         <Settings className="w-4 h-4 text-primary" />
         <h3 className="text-sm font-bold text-foreground">Settings</h3>
