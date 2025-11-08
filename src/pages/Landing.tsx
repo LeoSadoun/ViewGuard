@@ -2,13 +2,38 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 const Landing = () => {
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/10" />
-      
-      {/* Animated orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+    <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center">
+      {/* Layered gradient backgrounds with blue merging into black */}
+      <div className="absolute inset-0">
+        {/* Base gradient from corners */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-black to-black" />
+        <div className="absolute inset-0 bg-gradient-to-tl from-blue-800/20 via-transparent to-transparent" />
+        
+        {/* Animated radial gradients */}
+        <div 
+          className="absolute -top-1/2 -right-1/2 w-full h-full rounded-full blur-3xl opacity-30"
+          style={{
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%)',
+            animation: 'pulse 8s ease-in-out infinite'
+          }}
+        />
+        <div 
+          className="absolute -bottom-1/2 -left-1/2 w-full h-full rounded-full blur-3xl opacity-20"
+          style={{
+            background: 'radial-gradient(circle, rgba(29, 78, 216, 0.5) 0%, transparent 70%)',
+            animation: 'pulse 10s ease-in-out infinite',
+            animationDelay: '2s'
+          }}
+        />
+        
+        {/* Center glow */}
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl opacity-20"
+          style={{
+            background: 'radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, transparent 70%)'
+          }}
+        />
+      </div>
 
       {/* Content */}
       <div className="relative z-10 text-center space-y-16 px-4">
