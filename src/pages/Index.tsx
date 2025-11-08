@@ -15,6 +15,7 @@ const Index = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [highlightedCamera, setHighlightedCamera] = useState<number | null>(null);
   const [expandedCamera, setExpandedCamera] = useState<number | null>(null);
+  const [reportingId, setReportingId] = useState<string | null>(null);
   const onlineCameras = 8; // Simulated online count
 
   // Simulate detection events
@@ -83,15 +84,20 @@ const Index = () => {
   const handleReport = (id: string) => {
     const notification = notifications.find(n => n.id === id);
     if (notification) {
-      addReport({
-        id: notification.id,
-        cameraId: notification.cameraId,
-        detection: notification.detection,
-        timestamp: notification.timestamp
-      });
+      setReportingId(id);
+      
+      setTimeout(() => {
+        addReport({
+          id: notification.id,
+          cameraId: notification.cameraId,
+          detection: notification.detection,
+          timestamp: notification.timestamp
+        });
+        setNotifications(prev => prev.filter(n => n.id !== id));
+        setReportingId(null);
+        toast.success(`${notification.detection.type} reported`);
+      }, 1500);
     }
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    toast.success("False positive reported");
   };
   return <div className="min-h-screen bg-background p-4 md:p-6 cyber-bg">
       {/* Floating particles */}
@@ -165,7 +171,7 @@ const Index = () => {
             </div>
           </div>
           {/* Notifications */}
-          <NotificationsPanel notifications={notifications} onDismiss={handleDismiss} onReport={handleReport} />
+          <NotificationsPanel notifications={notifications} onDismiss={handleDismiss} onReport={handleReport} reportingId={reportingId} />
         </aside>
       </div>
 

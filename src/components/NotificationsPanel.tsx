@@ -1,4 +1,4 @@
-import { X, AlertTriangle } from "lucide-react";
+import { X, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Detection } from "./CCTVTile";
 export interface Notification {
@@ -11,11 +11,13 @@ interface NotificationsPanelProps {
   notifications: Notification[];
   onDismiss: (id: string) => void;
   onReport: (id: string) => void;
+  reportingId: string | null;
 }
 const NotificationsPanel = ({
   notifications,
   onDismiss,
-  onReport
+  onReport,
+  reportingId
 }: NotificationsPanelProps) => {
   return <div className="bg-primary/10 rounded-lg p-4 h-full flex flex-col border border-primary/20">
       <div className="flex items-center justify-between mb-4">
@@ -60,12 +62,21 @@ const NotificationsPanel = ({
 
               {/* Action Buttons */}
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1 h-7 text-xs" onClick={() => onDismiss(notification.id)} aria-label="Dismiss notification">
-                  Dismiss
-                </Button>
-                <Button size="sm" variant="secondary" className="flex-1 h-7 text-xs" onClick={() => onReport(notification.id)} aria-label="Report false positive">
-                  Report
-                </Button>
+                {reportingId === notification.id ? (
+                  <div className="flex-1 h-7 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Reporting...
+                  </div>
+                ) : (
+                  <>
+                    <Button size="sm" variant="outline" className="flex-1 h-7 text-xs" onClick={() => onDismiss(notification.id)} aria-label="Dismiss notification">
+                      Dismiss
+                    </Button>
+                    <Button size="sm" variant="secondary" className="flex-1 h-7 text-xs" onClick={() => onReport(notification.id)} aria-label="Report false positive">
+                      Report
+                    </Button>
+                  </>
+                )}
               </div>
             </div>)}
       </div>
