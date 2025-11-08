@@ -69,7 +69,7 @@ const CCTVTile = ({ cameraId, detection, onExpand, isHighlighted, videoSource }:
     >
       {/* CCTV Feed Background */}
       <div className="absolute inset-0 bg-muted scanline film-grain">
-        {videoSource ? (
+        {videoSource && (
           <video
             src={videoSource}
             autoPlay
@@ -78,21 +78,17 @@ const CCTVTile = ({ cameraId, detection, onExpand, isHighlighted, videoSource }:
             playsInline
             className="w-full h-full object-cover"
           />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
-            <Eye className="w-12 h-12" />
-          </div>
         )}
       </div>
 
-      {/* Timestamp Overlay */}
-      <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 text-[10px] font-mono text-foreground/80 z-20">
-        {getCurrentTime()}
+      {/* Camera ID - Top Left */}
+      <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 text-[10px] font-semibold text-foreground/80 z-20">
+        CAM {cameraId}
       </div>
 
-      {/* Camera ID */}
-      <div className="absolute top-2 right-2 px-2 py-1 bg-black/60 text-[10px] font-semibold text-foreground/80 z-20">
-        CAM {cameraId}
+      {/* Timestamp - Bottom Right */}
+      <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/60 text-[10px] font-mono text-foreground/80 z-20">
+        {getCurrentTime()}
       </div>
 
       {/* Detection Overlay */}
