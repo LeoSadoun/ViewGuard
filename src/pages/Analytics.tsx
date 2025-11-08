@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ArrowLeft, TrendingUp, MapPin, Clock, AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, TrendingUp, MapPin, Clock, AlertTriangle, Activity } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +34,22 @@ import {
 
 const Analytics = () => {
   const [timeRange, setTimeRange] = useState("24h");
+  const [isLiveUpdate, setIsLiveUpdate] = useState(false);
+  const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
+
+  // Simulate real-time data updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsLiveUpdate(true);
+      setLastUpdateTime(new Date());
+      
+      setTimeout(() => {
+        setIsLiveUpdate(false);
+      }, 2000);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Mock data for charts
   const detectionTrends = [
@@ -134,16 +150,53 @@ const Analytics = () => {
               <p className="text-xs text-muted-foreground">Detection trends and insights</p>
             </div>
           </div>
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="24h">Last 24h</SelectItem>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-            </SelectContent>
-          </Select>
+          
+          <div className="flex items-center gap-3">
+            {/* Live Update Indicator */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-card/80 border border-border backdrop-blur-sm">
+              <div className="relative flex items-center justify-center w-5 h-5">
+                <div 
+                  className={`absolute w-3 h-3 rounded-full transition-all duration-300 ${
+                    isLiveUpdate 
+                      ? 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]' 
+                      : 'bg-green-500/40'
+                  }`}
+                />
+                {isLiveUpdate && (
+                  <>
+                    <div className="absolute w-3 h-3 rounded-full bg-green-500 animate-ping opacity-75" />
+                    <div className="absolute w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                  </>
+                )}
+              </div>
+              <div className="text-xs">
+                <div className={`font-semibold transition-colors ${isLiveUpdate ? 'text-green-500' : 'text-foreground'}`}>
+                  {isLiveUpdate ? (
+                    <span className="flex items-center gap-1">
+                      <Activity className="w-3 h-3 animate-pulse" />
+                      Updating...
+                    </span>
+                  ) : (
+                    'Live'
+                  )}
+                </div>
+                <div className="text-muted-foreground">
+                  {lastUpdateTime.toLocaleTimeString()}
+                </div>
+              </div>
+            </div>
+            
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="24h">Last 24h</SelectItem>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </header>
 
