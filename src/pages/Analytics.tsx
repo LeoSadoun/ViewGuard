@@ -8,7 +8,7 @@ import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import { useNotifications } from "@/contexts/NotificationsContext";
 
 const Analytics = () => {
-  const { getHighRiskCount, getTotalDetections } = useNotifications();
+  const { getHighRiskCount, getTotalDetections, notifications } = useNotifications();
   const [timeRange, setTimeRange] = useState("24h");
   const [isLiveUpdate, setIsLiveUpdate] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
@@ -25,106 +25,96 @@ const Analytics = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Mock data for charts
-  const detectionTrends = [{
-    time: "00:00",
-    theft: 2,
-    fight: 1,
-    robbery: 0,
-    fall: 1
-  }, {
-    time: "04:00",
-    theft: 1,
-    fight: 0,
-    robbery: 1,
-    fall: 0
-  }, {
-    time: "08:00",
-    theft: 4,
-    fight: 2,
-    robbery: 1,
-    fall: 1
-  }, {
-    time: "12:00",
-    theft: 6,
-    fight: 3,
-    robbery: 2,
-    fall: 2
-  }, {
-    time: "16:00",
-    theft: 8,
-    fight: 4,
-    robbery: 1,
-    fall: 1
-  }, {
-    time: "20:00",
-    theft: 5,
-    fight: 2,
-    robbery: 3,
-    fall: 0
-  }];
-  const cameraActivity = [{
-    camera: "CAM 1",
-    incidents: 12
-  }, {
-    camera: "CAM 2",
-    incidents: 8
-  }, {
-    camera: "CAM 3",
-    incidents: 15
-  }, {
-    camera: "CAM 4",
-    incidents: 22
-  }, {
-    camera: "CAM 5",
-    incidents: 6
-  }, {
-    camera: "CAM 6",
-    incidents: 18
-  }, {
-    camera: "CAM 7",
-    incidents: 10
-  }, {
-    camera: "CAM 8",
-    incidents: 14
-  }, {
-    camera: "CAM 9",
-    incidents: 9
-  }];
-  const detectionTypes = [{
-    name: "THEFT",
-    value: 45,
-    color: "hsl(var(--alert-high))",
-    cameras: ["CAM 1", "CAM 4", "CAM 6", "CAM 8"],
-    topCamera: "CAM 4",
-    topCameraCount: 12,
-    avgResponseTime: "2.1s"
-  }, {
-    name: "FIGHT",
-    value: 28,
-    color: "hsl(var(--alert-medium))",
-    cameras: ["CAM 2", "CAM 3", "CAM 7"],
-    topCamera: "CAM 3",
-    topCameraCount: 11,
-    avgResponseTime: "1.8s"
-  }, {
-    name: "ROBBERY",
-    value: 18,
-    color: "hsl(var(--alert-low))",
-    cameras: ["CAM 1", "CAM 5", "CAM 9"],
-    topCamera: "CAM 1",
-    topCameraCount: 8,
-    avgResponseTime: "2.5s"
-  }, {
-    name: "FALL",
-    value: 9,
-    color: "hsl(var(--primary))",
-    cameras: ["CAM 2", "CAM 6"],
-    topCamera: "CAM 6",
-    topCameraCount: 6,
-    avgResponseTime: "1.5s"
-  }];
-  const heatmapData = [[0, 1, 0, 2, 1, 0, 3, 1, 0], [1, 0, 2, 1, 0, 1, 0, 2, 1], [0, 2, 1, 0, 3, 2, 1, 0, 2], [2, 1, 0, 4, 2, 1, 0, 3, 1], [1, 0, 3, 2, 1, 0, 2, 1, 0], [0, 2, 1, 0, 2, 3, 1, 0, 2]];
+  // Generate detection trends from notifications
+  const detectionTrends = (() => {
+    const timeSlots = ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"];
+    const trends = timeSlots.map(time => ({
+      time,
+      theft: 0,
+      fight: 0,
+      robbery: 0,
+      fall: 0,
+      vandalism: 0
+    }));
+
+    notifications.forEach(notification => {
+      const hour = notification.timestamp.getHours();
+      const slotIndex = Math.floor(hour / 4);
+      const type = notification.detection.type.toLowerCase();
+      if (trends[slotIndex] && type in trends[slotIndex]) {
+        (trends[slotIndex] as any)[type]++;
+      }
+    });
+
+    return trends;
+  })();
+
+  // Generate camera activity from notifications
+  const cameraActivity = (() => {
+    const activity: Record<number, number> = {};
+    
+    notifications.forEach(notification => {
+      activity[notification.cameraId] = (activity[notification.cameraId] || 0) + 1;
+    });
+
+    return Array.from({ length: 9 }, (_, i) => ({
+      camera: `CAM ${i + 1}`,
+      incidents: activity[i + 1] || 0
+    }));
+  })();
+
+  // Generate detection types distribution from notifications
+  const detectionTypes = (() => {
+    const types: Record<string, any> = {};
+    const colors: Record<string, string> = {
+      THEFT: "hsl(var(--alert-high))",
+      FIGHT: "hsl(var(--alert-medium))",
+      ROBBERY: "hsl(var(--alert-low))",
+      FALL: "hsl(var(--primary))",
+      VANDALISM: "hsl(var(--accent))"
+    };
+
+    notifications.forEach(notification => {
+      const type = notification.detection.type;
+      if (!types[type]) {
+        types[type] = {
+          name: type,
+          value: 0,
+          color: colors[type] || "hsl(var(--primary))",
+          cameras: new Set<string>(),
+          topCamera: "",
+          topCameraCount: 0,
+          avgResponseTime: "2.0s"
+        };
+      }
+      types[type].value++;
+      types[type].cameras.add(`CAM ${notification.cameraId}`);
+    });
+
+    return Object.values(types).map((type: any) => ({
+      ...type,
+      cameras: Array.from(type.cameras),
+      topCamera: type.cameras.size > 0 ? Array.from(type.cameras)[0] : "N/A",
+      topCameraCount: type.value
+    }));
+  })();
+
+  // Generate heatmap from notifications
+  const heatmapData = (() => {
+    const matrix = Array(6).fill(0).map(() => Array(9).fill(0));
+    
+    notifications.forEach(notification => {
+      const hour = notification.timestamp.getHours();
+      const timeSlot = Math.floor(hour / 4);
+      const cameraIndex = notification.cameraId - 1;
+      
+      if (cameraIndex >= 0 && cameraIndex < 9 && timeSlot < 6) {
+        matrix[timeSlot][cameraIndex]++;
+      }
+    });
+
+    return matrix;
+  })();
   const getHeatmapColor = (value: number) => {
     if (value === 0) return "bg-muted/30";
     if (value === 1) return "bg-alert-low/30";
