@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Shield, BarChart3, Video, FileText } from "lucide-react";
+import { Shield, BarChart3, Video, FileText, Loader2, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CCTVTile, { Detection } from "@/components/CCTVTile";
 import NotificationsPanel, { Notification } from "@/components/NotificationsPanel";
 import CameraModal from "@/components/CameraModal";
@@ -15,7 +16,9 @@ const Index = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [highlightedCamera, setHighlightedCamera] = useState<number | null>(null);
   const [expandedCamera, setExpandedCamera] = useState<number | null>(null);
-  const [reportingId, setReportingId] = useState<string | null>(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportStatus, setReportStatus] = useState<"loading" | "success">("loading");
+  const [currentReportType, setCurrentReportType] = useState<string>("");
   const onlineCameras = 8; // Simulated online count
 
   // Simulate detection events
@@ -84,7 +87,9 @@ const Index = () => {
   const handleReport = (id: string) => {
     const notification = notifications.find(n => n.id === id);
     if (notification) {
-      setReportingId(id);
+      setCurrentReportType(notification.detection.type);
+      setReportStatus("loading");
+      setReportDialogOpen(true);
       
       setTimeout(() => {
         addReport({
@@ -94,9 +99,13 @@ const Index = () => {
           timestamp: notification.timestamp
         });
         setNotifications(prev => prev.filter(n => n.id !== id));
-        setReportingId(null);
-        toast.success(`${notification.detection.type} reported`);
-      }, 1500);
+        setReportStatus("success");
+        
+        setTimeout(() => {
+          setReportDialogOpen(false);
+          toast.success(`${notification.detection.type} reported`);
+        }, 2000);
+      }, 3000);
     }
   };
   return <div className="min-h-screen bg-background p-4 md:p-6 cyber-bg">
@@ -171,11 +180,36 @@ const Index = () => {
             </div>
           </div>
           {/* Notifications */}
-          <NotificationsPanel notifications={notifications} onDismiss={handleDismiss} onReport={handleReport} reportingId={reportingId} />
+          <NotificationsPanel notifications={notifications} onDismiss={handleDismiss} onReport={handleReport} />
         </aside>
       </div>
 
       {expandedCamera && <CameraModal isOpen={!!expandedCamera} onClose={() => setExpandedCamera(null)} cameraId={expandedCamera} detection={detections[expandedCamera] || null} />}
+      
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col items-center justify-center py-8">
+            {reportStatus === "loading" ? (
+              <>
+                <Loader2 className="w-16 h-16 text-primary animate-spin mb-4" />
+                <h3 className="text-xl font-bold text-foreground mb-2">Processing Report</h3>
+                <p className="text-sm text-muted-foreground text-center">
+                  Analyzing {currentReportType} detection...
+                </p>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
+                <h3 className="text-xl font-bold text-foreground mb-2">Report Submitted</h3>
+                <p className="text-sm text-muted-foreground text-center">
+                  {currentReportType} detection has been reported
+                </p>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>;
 };
 export default Index;
