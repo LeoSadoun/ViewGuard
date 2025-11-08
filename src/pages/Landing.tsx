@@ -40,8 +40,22 @@ const Landing = () => {
         {/* Title with Glow */}
         <div className="space-y-2">
           <h1 className="text-8xl md:text-9xl font-bold tracking-tight leading-none">
-            <span className="inline-block text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]">View</span>
-            <span className="inline-block text-primary drop-shadow-[0_0_50px_hsl(var(--primary))]">Guard</span>
+            <span 
+              className="inline-block text-white"
+              style={{
+                textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.4), 0 0 40px rgba(255,255,255,0.2)'
+              }}
+            >
+              View
+            </span>
+            <span 
+              className="inline-block text-blue-500"
+              style={{
+                textShadow: '0 0 10px rgba(59,130,246,1), 0 0 20px rgba(59,130,246,0.8), 0 0 30px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.4), 0 0 60px rgba(59,130,246,0.2)'
+              }}
+            >
+              Guard
+            </span>
           </h1>
           <p className="text-muted-foreground text-lg md:text-xl tracking-widest font-light">
             ADVANCED SURVEILLANCE SYSTEM
