@@ -6,9 +6,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useNotifications } from "@/contexts/NotificationsContext";
+import { useReports } from "@/contexts/ReportsContext";
 
 const Analytics = () => {
   const { getHighRiskCount, getTotalDetections, notifications } = useNotifications();
+  const { reports } = useReports();
+  
+  // Combine notifications and reports for complete analytics
+  const allIncidents = [
+    ...notifications.map(n => ({ ...n, isReport: false })),
+    ...reports.map(r => ({ ...r, isReport: true }))
+  ];
   const [timeRange, setTimeRange] = useState("24h");
   const [isLiveUpdate, setIsLiveUpdate] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
@@ -25,7 +33,7 @@ const Analytics = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Generate detection trends from notifications
+  // Generate detection trends from all incidents
   const detectionTrends = (() => {
     const timeSlots = ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"];
     const trends = timeSlots.map(time => ({
@@ -37,10 +45,10 @@ const Analytics = () => {
       vandalism: 0
     }));
 
-    notifications.forEach(notification => {
-      const hour = notification.timestamp.getHours();
+    allIncidents.forEach(incident => {
+      const hour = incident.timestamp.getHours();
       const slotIndex = Math.floor(hour / 4);
-      const type = notification.detection.type.toLowerCase();
+      const type = incident.detection.type.toLowerCase();
       if (trends[slotIndex] && type in trends[slotIndex]) {
         (trends[slotIndex] as any)[type]++;
       }
@@ -49,12 +57,12 @@ const Analytics = () => {
     return trends;
   })();
 
-  // Generate camera activity from notifications
+  // Generate camera activity from all incidents
   const cameraActivity = (() => {
     const activity: Record<number, number> = {};
     
-    notifications.forEach(notification => {
-      activity[notification.cameraId] = (activity[notification.cameraId] || 0) + 1;
+    allIncidents.forEach(incident => {
+      activity[incident.cameraId] = (activity[incident.cameraId] || 0) + 1;
     });
 
     return Array.from({ length: 9 }, (_, i) => ({
@@ -63,7 +71,7 @@ const Analytics = () => {
     }));
   })();
 
-  // Generate detection types distribution from notifications
+  // Generate detection types distribution from all incidents
   const detectionTypes = (() => {
     const types: Record<string, any> = {};
     const colors: Record<string, string> = {
@@ -74,8 +82,8 @@ const Analytics = () => {
       VANDALISM: "hsl(var(--accent))"
     };
 
-    notifications.forEach(notification => {
-      const type = notification.detection.type;
+    allIncidents.forEach(incident => {
+      const type = incident.detection.type;
       if (!types[type]) {
         types[type] = {
           name: type,
@@ -88,7 +96,7 @@ const Analytics = () => {
         };
       }
       types[type].value++;
-      types[type].cameras.add(`CAM ${notification.cameraId}`);
+      types[type].cameras.add(`CAM ${incident.cameraId}`);
     });
 
     return Object.values(types).map((type: any) => ({
@@ -99,14 +107,14 @@ const Analytics = () => {
     }));
   })();
 
-  // Generate heatmap from notifications
+  // Generate heatmap from all incidents
   const heatmapData = (() => {
     const matrix = Array(6).fill(0).map(() => Array(9).fill(0));
     
-    notifications.forEach(notification => {
-      const hour = notification.timestamp.getHours();
+    allIncidents.forEach(incident => {
+      const hour = incident.timestamp.getHours();
       const timeSlot = Math.floor(hour / 4);
-      const cameraIndex = notification.cameraId - 1;
+      const cameraIndex = incident.cameraId - 1;
       
       if (cameraIndex >= 0 && cameraIndex < 9 && timeSlot < 6) {
         matrix[timeSlot][cameraIndex]++;
@@ -206,8 +214,8 @@ const Analytics = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{getTotalDetections()}</div>
-            <p className="text-xs text-muted-foreground">Active notifications</p>
+            <div className="text-3xl font-bold text-foreground">{allIncidents.length}</div>
+            <p className="text-xs text-muted-foreground">{notifications.length} active, {reports.length} reported</p>
           </CardContent>
         </Card>
 
