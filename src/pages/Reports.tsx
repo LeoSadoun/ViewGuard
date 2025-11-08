@@ -65,15 +65,15 @@ const Reports = () => {
       {/* Header */}
       <header className="mb-6 relative z-10">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-10 h-10 rounded bg-primary/20 border border-primary flex items-center justify-center glow-cyber">
               <FileText className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground tracking-wider">Reports</h1>
-              <p className="text-xs text-muted-foreground uppercase tracking-widest">Incident Review & Analysis</p>
+              <h1 className="text-2xl font-bold text-foreground tracking-wider">View<span className="text-primary">Guard</span></h1>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest">Reports</p>
             </div>
-          </div>
+          </Link>
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" asChild className="gap-2">
               <Link to="/monitor">
