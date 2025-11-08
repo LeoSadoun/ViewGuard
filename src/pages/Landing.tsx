@@ -3,31 +3,15 @@ import { Shield, Eye, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 const Landing = () => {
   return <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center">
-      {/* Animated Grid Background */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-20" style={{
+      {/* Subtle Grid Background */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5" style={{
       backgroundImage: `linear-gradient(hsl(var(--primary)) 1px, transparent 1px), 
                              linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)`,
-      backgroundSize: '50px 50px',
-      animation: 'grid-move 20s linear infinite'
+      backgroundSize: '80px 80px'
     }} />
-      
-      {/* Floating Particles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {Array.from({
-        length: 30
-      }).map((_, i) => <div key={i} className="absolute w-1 h-1 bg-primary rounded-full opacity-60" style={{
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-        animationDelay: `${Math.random() * 10}s`,
-        animation: "float-particle 15s linear infinite"
-      }} />)}
-      </div>
 
-      {/* Radial Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-radial from-primary/10 via-background to-background" />
-
-      {/* Scanline Effect */}
-      <div className="absolute inset-0 scanline pointer-events-none" />
+      {/* Subtle Radial Gradient */}
+      <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-background to-background" />
 
       {/* Content */}
       <div className="relative z-10 text-center space-y-8 px-4 max-w-4xl mx-auto">
@@ -44,8 +28,8 @@ const Landing = () => {
         {/* Title */}
         <div className="space-y-4">
           <h1 className="text-6xl md:text-8xl font-bold tracking-wider">
-            <span className="text-foreground">ViewGuard</span>
-            <span className="text-primary">AI</span>
+            <span className="text-foreground">View</span>
+            <span className="text-primary">Guard</span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground uppercase tracking-[0.3em] font-light">
             Neural Surveillance Grid
