@@ -1,4 +1,4 @@
-import { Shield, BarChart3, FileText, Upload as UploadIcon, Video } from "lucide-react";
+import { Shield, BarChart3, FileText, Upload as UploadIcon, Video, Radio } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -77,6 +77,12 @@ const Upload = () => {
               <Link to="/monitor">
                 <Shield className="w-4 h-4" />
                 Monitor
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild className="gap-2">
+              <Link to="/realtime">
+                <Radio className="w-4 h-4" />
+                Realtime
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild className="gap-2">
