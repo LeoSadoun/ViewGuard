@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Notification } from "@/components/NotificationsPanel";
 import { Detection } from "@/components/CCTVTile";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ const NotificationsContext = createContext<NotificationsContextType | undefined>
 
 export const NotificationsProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const location = useLocation();
 
   // Simulate detection events that run continuously
   useEffect(() => {
@@ -46,15 +48,17 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
         
         setNotifications(prev => [notification, ...prev]);
 
-        // Show toast
-        toast.error(`Camera ${cameraId} — ${type} detected`, {
-          description: `Confidence: ${detection.confidence}%`
-        });
+        // Only show toast if not on landing page
+        if (location.pathname !== "/") {
+          toast.error(`Camera ${cameraId} — ${type} detected`, {
+            description: `Confidence: ${detection.confidence}%`
+          });
+        }
       }
     }, 5000); // Check every 5 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [location.pathname]);
 
   const addNotification = (notification: Notification) => {
     setNotifications(prev => [notification, ...prev]);
