@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 
 const Landing = () => {
   const [typedText, setTypedText] = useState("");
+  const [animationsReady, setAnimationsReady] = useState(false);
   const fullText = "ADVANCED SURVEILLANCE SYSTEM";
   
   useEffect(() => {
@@ -18,6 +19,14 @@ const Landing = () => {
     }, 100);
     
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    // Delay animations to prevent initial lag
+    const timer = setTimeout(() => {
+      setAnimationsReady(true);
+    }, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -57,26 +66,26 @@ const Landing = () => {
       </div>
 
       {/* Floating Orbs */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div
-            key={`orb-${i}`}
-            className="absolute rounded-full bg-primary/20 blur-3xl"
-            style={{
-              width: `${Math.random() * 300 + 200}px`,
-              height: `${Math.random() * 300 + 200}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float-orb ${Math.random() * 10 + 15}s ease-in-out infinite`,
-              animationDelay: `${i * 3 + 1}s`,
-              animationFillMode: 'backwards',
-              willChange: 'transform',
-              transform: 'translateZ(0)',
-              opacity: 0
-            }}
-          />
-        ))}
-      </div>
+      {animationsReady && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={`orb-${i}`}
+              className="absolute rounded-full bg-primary/20 blur-3xl animate-fade-in"
+              style={{
+                width: `${Math.random() * 300 + 200}px`,
+                height: `${Math.random() * 300 + 200}px`,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animation: `fade-in 1s ease-out, float-orb ${Math.random() * 10 + 15}s ease-in-out infinite`,
+                animationDelay: `0s, ${i * 2}s`,
+                willChange: 'transform',
+                transform: 'translateZ(0)'
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Rotating Geometric Shapes */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-10">
@@ -100,25 +109,25 @@ const Landing = () => {
       </div>
 
       {/* Particle Network */}
-      <div className="absolute inset-0 pointer-events-none">
-        {Array.from({ length: 20 }).map((_, i) => (
-          <div
-            key={`particle-${i}`}
-            className="absolute w-1 h-1 bg-primary rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `particle-float ${Math.random() * 15 + 10}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 8 + 2}s`,
-              animationFillMode: 'backwards',
-              boxShadow: '0 0 10px rgba(59, 130, 246, 0.8)',
-              willChange: 'transform, opacity',
-              transform: 'translateZ(0)',
-              opacity: 0
-            }}
-          />
-        ))}
-      </div>
+      {animationsReady && (
+        <div className="absolute inset-0 pointer-events-none">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div
+              key={`particle-${i}`}
+              className="absolute w-1 h-1 bg-primary rounded-full animate-fade-in"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animation: `fade-in 1s ease-out, particle-float ${Math.random() * 15 + 10}s ease-in-out infinite`,
+                animationDelay: `0s, ${Math.random() * 5 + 1}s`,
+                boxShadow: '0 0 10px rgba(59, 130, 246, 0.8)',
+                willChange: 'transform, opacity',
+                transform: 'translateZ(0)'
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Pulse Waves */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
