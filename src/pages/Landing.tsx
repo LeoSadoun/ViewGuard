@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 
 const Landing = () => {
   const [typedText, setTypedText] = useState("");
-  const [animationsReady, setAnimationsReady] = useState(false);
   const fullText = "ADVANCED SURVEILLANCE SYSTEM";
   
   // Generate stable random values for orbs
@@ -40,14 +39,6 @@ const Landing = () => {
     }, 100);
     
     return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    // Delay animations to prevent initial lag
-    const timer = setTimeout(() => {
-      setAnimationsReady(true);
-    }, 500);
-    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -87,25 +78,23 @@ const Landing = () => {
       </div>
 
       {/* Floating Orbs */}
-      {animationsReady && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {orbConfigs.map((config, i) => (
-            <div
-              key={`orb-${i}`}
-              className="absolute rounded-full bg-primary/20 blur-3xl animate-fade-in"
-              style={{
-                width: `${config.width}px`,
-                height: `${config.height}px`,
-                left: `${config.left}%`,
-                top: `${config.top}%`,
-                animation: `fade-in 1s ease-out, float-orb ${config.duration}s ease-in-out infinite`,
-                animationDelay: `0s, ${i * 2}s`,
-                willChange: 'transform'
-              }}
-            />
-          ))}
-        </div>
-      )}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {orbConfigs.map((config, i) => (
+          <div
+            key={`orb-${i}`}
+            className="absolute rounded-full bg-primary/20 blur-3xl"
+            style={{
+              width: `${config.width}px`,
+              height: `${config.height}px`,
+              left: `${config.left}%`,
+              top: `${config.top}%`,
+              animation: `float-orb ${config.duration}s ease-in-out infinite`,
+              animationDelay: `${i * 2}s`,
+              willChange: 'transform'
+            }}
+          />
+        ))}
+      </div>
 
       {/* Rotating Geometric Shapes */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-10">
@@ -129,24 +118,22 @@ const Landing = () => {
       </div>
 
       {/* Particle Network */}
-      {animationsReady && (
-        <div className="absolute inset-0 pointer-events-none">
-          {particleConfigs.map((config, i) => (
-            <div
-              key={`particle-${i}`}
-              className="absolute w-1 h-1 bg-primary rounded-full animate-fade-in"
-              style={{
-                left: `${config.left}%`,
-                top: `${config.top}%`,
-                animation: `fade-in 1s ease-out, particle-float ${config.duration}s ease-in-out infinite`,
-                animationDelay: `0s, ${config.delay}s`,
-                boxShadow: '0 0 10px rgba(59, 130, 246, 0.8)',
-                willChange: 'transform, opacity'
-              }}
-            />
-          ))}
-        </div>
-      )}
+      <div className="absolute inset-0 pointer-events-none">
+        {particleConfigs.map((config, i) => (
+          <div
+            key={`particle-${i}`}
+            className="absolute w-1 h-1 bg-primary rounded-full"
+            style={{
+              left: `${config.left}%`,
+              top: `${config.top}%`,
+              animation: `particle-float ${config.duration}s ease-in-out infinite`,
+              animationDelay: `${config.delay}s`,
+              boxShadow: '0 0 10px rgba(59, 130, 246, 0.8)',
+              willChange: 'transform, opacity'
+            }}
+          />
+        ))}
+      </div>
 
       {/* Pulse Waves */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
