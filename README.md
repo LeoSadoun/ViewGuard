@@ -1,4 +1,4 @@
-# VigilantAI — Live Surveillance System
+# ViewGuard — Live Surveillance System
 
 AI-powered CCTV monitoring dashboard with real-time threat detection.
 
