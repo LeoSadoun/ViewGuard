@@ -46,32 +46,14 @@ const Reports = () => {
     });
   };
 
-  // When a report is selected, set up the video to play the incident clip
+  // When a report is selected, set up the video clip looping
   useEffect(() => {
-    if (selectedReport && selectedReport.videoUrl && selectedReport.videoTimestamp !== undefined && videoRef.current) {
+    if (selectedReport && selectedReport.videoTimestamp !== undefined && videoRef.current) {
       const video = videoRef.current;
-
-      // Calculate start time (5 seconds before event, or 0 if event is early in video)
       const startTime = Math.max(0, selectedReport.videoTimestamp - 5);
-      const endTime = selectedReport.videoTimestamp + 20; // 20 seconds after event
+      const endTime = selectedReport.videoTimestamp + 20;
 
-      // Wait for video metadata to load before setting currentTime
-      const handleLoadedMetadata = () => {
-        video.currentTime = startTime;
-        video.play();
-      };
-
-      // Check if metadata is already loaded
-      if (video.readyState >= 1) {
-        // Metadata already loaded
-        video.currentTime = startTime;
-        video.play();
-      } else {
-        // Wait for metadata to load
-        video.addEventListener('loadedmetadata', handleLoadedMetadata);
-      }
-
-      // Stop video after 25 seconds total (5 before + 20 after)
+      // Stop video after 25 seconds total (5 before + 20 after) and loop
       const handleTimeUpdate = () => {
         if (video.currentTime >= endTime) {
           video.pause();
@@ -82,7 +64,6 @@ const Reports = () => {
       video.addEventListener('timeupdate', handleTimeUpdate);
 
       return () => {
-        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
         video.removeEventListener('timeupdate', handleTimeUpdate);
       };
     }
@@ -248,6 +229,15 @@ const Reports = () => {
                     className="w-full h-full object-cover"
                     controls
                     playsInline
+                    onLoadedMetadata={(e) => {
+                      const video = e.currentTarget;
+                      if (selectedReport.videoTimestamp !== undefined) {
+                        const startTime = Math.max(0, selectedReport.videoTimestamp - 5);
+                        console.log('📹 [Reports] Video metadata loaded, seeking to', startTime);
+                        video.currentTime = startTime;
+                        video.play().catch(err => console.log('Autoplay prevented:', err));
+                      }
+                    }}
                   />
 
                   {/* Video timestamp overlay */}
