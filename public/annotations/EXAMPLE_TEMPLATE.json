@@ -1,0 +1,31 @@
+{
+  "videoFile": "Burglary003_x264.mp4",
+  "category": "burglary",
+  "duration": 0,
+  "detections": [
+    {
+      "startTime": 2.5,
+      "endTime": 10.0,
+      "type": "PERSON",
+      "boundingBox": {
+        "x": 30,
+        "y": 25,
+        "width": 20,
+        "height": 35
+      }
+    }
+  ],
+  "events": [
+    {
+      "time": 8.5,
+      "type": "THEFT",
+      "confidence": 92,
+      "boundingBox": {
+        "x": 30,
+        "y": 25,
+        "width": 20,
+        "height": 35
+      }
+    }
+  ]
+}

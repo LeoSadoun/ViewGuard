@@ -7,6 +7,7 @@ export interface Report {
   detection: Detection;
   timestamp: Date;
   videoUrl?: string;
+  videoTimestamp?: number; // The time in the video when event occurred (in seconds)
 }
 
 interface ReportsContextType {

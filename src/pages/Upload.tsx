@@ -1,11 +1,16 @@
-import { Shield, BarChart3, FileText, Upload as UploadIcon, Video, Radio } from "lucide-react";
+import { Shield, BarChart3, FileText, Upload as UploadIcon, Video, Radio, AlertTriangle, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 const Upload = () => {
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadedVideo, setUploadedVideo] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [detections, setDetections] = useState<Array<{ type: string; confidence: number; timestamp: number }>>([]);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -19,7 +24,7 @@ const Upload = () => {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     handleFiles(files);
   };
@@ -33,15 +38,71 @@ const Upload = () => {
 
   const handleFiles = (files: File[]) => {
     const videoFiles = files.filter(file => file.type.startsWith('video/'));
-    
+
     if (videoFiles.length === 0) {
       toast.error("Please upload video files only");
       return;
     }
 
-    toast.success(`${videoFiles.length} video(s) uploaded successfully`);
-    console.log("Uploaded files:", videoFiles);
+    // Only process the first video
+    const videoFile = videoFiles[0];
+    const videoUrl = URL.createObjectURL(videoFile);
+    setUploadedVideo(videoUrl);
+    setDetections([]);
+
+    toast.success("Video uploaded successfully");
+
+    // Start "analyzing" after 1 second
+    setTimeout(() => {
+      setIsAnalyzing(true);
+      analyzeVideo();
+    }, 1000);
   };
+
+  const analyzeVideo = () => {
+    // Simulate AI analysis - randomly detect THEFT or VANDALISM at random timestamps
+    const detectionTypes = ["THEFT", "VANDALISM"];
+    const numDetections = 1 + Math.floor(Math.random() * 3); // 1-3 detections
+    const newDetections: Array<{ type: string; confidence: number; timestamp: number }> = [];
+
+    for (let i = 0; i < numDetections; i++) {
+      const type = detectionTypes[Math.floor(Math.random() * detectionTypes.length)];
+      const confidence = 70 + Math.floor(Math.random() * 25); // 70-94%
+      const timestamp = 5 + Math.floor(Math.random() * 30); // Random timestamp between 5-35 seconds
+
+      newDetections.push({ type: type!, confidence, timestamp });
+    }
+
+    // Sort by timestamp
+    newDetections.sort((a, b) => a.timestamp - b.timestamp);
+
+    // Simulate analysis time (2-4 seconds)
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      setDetections(newDetections);
+
+      // Show success toast
+      toast.success(`Analysis complete: ${newDetections.length} incident(s) detected`, {
+        description: newDetections.map(d => `${d.type} at ${d.timestamp}s`).join(", ")
+      });
+    }, 2000 + Math.random() * 2000);
+  };
+
+  const jumpToTimestamp = (timestamp: number) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = timestamp;
+      videoRef.current.play();
+    }
+  };
+
+  // Clean up object URL when component unmounts
+  useEffect(() => {
+    return () => {
+      if (uploadedVideo) {
+        URL.revokeObjectURL(uploadedVideo);
+      }
+    };
+  }, [uploadedVideo]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 cyber-bg">
@@ -109,74 +170,168 @@ const Upload = () => {
           <p className="text-muted-foreground">Upload surveillance footage for AI-powered analysis</p>
         </div>
 
-        {/* Upload Box */}
-        <div
-          className={`relative border-2 border-dashed rounded-lg transition-all duration-300 ${
-            isDragging
-              ? "border-primary bg-primary/10 scale-[1.02]"
-              : "border-border hover:border-primary/50 hover:bg-primary/5"
-          }`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          <input
-            type="file"
-            id="video-upload"
-            className="hidden"
-            accept="video/*"
-            multiple
-            onChange={handleFileSelect}
-          />
-          <label
-            htmlFor="video-upload"
-            className="flex flex-col items-center justify-center py-20 px-6 cursor-pointer"
+        {/* Upload Box - Show only if no video uploaded */}
+        {!uploadedVideo && (
+          <div
+            className={`relative border-2 border-dashed rounded-lg transition-all duration-300 ${
+              isDragging
+                ? "border-primary bg-primary/10 scale-[1.02]"
+                : "border-border hover:border-primary/50 hover:bg-primary/5"
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
           >
-            <div className="relative mb-6">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
-              <div className="relative w-24 h-24 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
-                <Video className="w-12 h-12 text-primary" />
+            <input
+              type="file"
+              id="video-upload"
+              className="hidden"
+              accept="video/*"
+              onChange={handleFileSelect}
+            />
+            <label
+              htmlFor="video-upload"
+              className="flex flex-col items-center justify-center py-20 px-6 cursor-pointer"
+            >
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+                <div className="relative w-24 h-24 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
+                  <Video className="w-12 h-12 text-primary" />
+                </div>
               </div>
-            </div>
-            
-            <h3 className="text-xl font-semibold text-foreground mb-2">Click to Upload</h3>
-            <p className="text-sm text-muted-foreground mb-4">or drag and drop your video files here</p>
-            
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="px-3 py-1 rounded-full bg-muted/50 border border-border">MP4</div>
-              <div className="px-3 py-1 rounded-full bg-muted/50 border border-border">AVI</div>
-              <div className="px-3 py-1 rounded-full bg-muted/50 border border-border">MOV</div>
-              <div className="px-3 py-1 rounded-full bg-muted/50 border border-border">MKV</div>
-            </div>
-          </label>
-        </div>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-primary"></div>
-              <h4 className="text-sm font-semibold text-foreground">Automated Detection</h4>
-            </div>
-            <p className="text-xs text-muted-foreground">AI analyzes footage for suspicious activity</p>
+              <h3 className="text-xl font-semibold text-foreground mb-2">Click to Upload</h3>
+              <p className="text-sm text-muted-foreground mb-4">or drag and drop your video files here</p>
+
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="px-3 py-1 rounded-full bg-muted/50 border border-border">MP4</div>
+                <div className="px-3 py-1 rounded-full bg-muted/50 border border-border">AVI</div>
+                <div className="px-3 py-1 rounded-full bg-muted/50 border border-border">MOV</div>
+                <div className="px-3 py-1 rounded-full bg-muted/50 border border-border">MKV</div>
+              </div>
+            </label>
           </div>
-          
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-primary"></div>
-              <h4 className="text-sm font-semibold text-foreground">Timestamp Extraction</h4>
+        )}
+
+        {/* Video Player - Show when video is uploaded */}
+        {uploadedVideo && (
+          <div className="space-y-6">
+            {/* Video Player */}
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              <video
+                ref={videoRef}
+                src={uploadedVideo}
+                className="w-full aspect-video bg-black"
+                controls
+                playsInline
+              />
             </div>
-            <p className="text-xs text-muted-foreground">Precise event timing and markers</p>
-          </div>
-          
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-primary"></div>
-              <h4 className="text-sm font-semibold text-foreground">Detailed Reports</h4>
+
+            {/* Analysis Status */}
+            {isAnalyzing && (
+              <div className="bg-card border border-border rounded-lg p-6">
+                <div className="flex items-center justify-center gap-3">
+                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                  <p className="text-foreground font-semibold">Analyzing footage for suspicious activity...</p>
+                </div>
+              </div>
+            )}
+
+            {/* Detection Results */}
+            {!isAnalyzing && detections.length > 0 && (
+              <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                  <h3 className="text-lg font-bold text-foreground">Detection Results</h3>
+                  <Badge variant="destructive" className="ml-auto">
+                    {detections.length} Incident{detections.length > 1 ? 's' : ''} Detected
+                  </Badge>
+                </div>
+
+                <div className="space-y-3">
+                  {detections.map((detection, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-4 bg-background/50 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer"
+                      onClick={() => jumpToTimestamp(detection.timestamp)}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-destructive/20 border border-destructive flex items-center justify-center">
+                          <AlertTriangle className="w-5 h-5 text-destructive" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge variant="destructive">{detection.type}</Badge>
+                            <span className="text-xs text-muted-foreground">
+                              Confidence: {detection.confidence}%
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground">
+                            Detected at {detection.timestamp}s
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          jumpToTimestamp(detection.timestamp);
+                        }}
+                      >
+                        Jump to Timestamp
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Upload New Video Button */}
+            <div className="text-center">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setUploadedVideo(null);
+                  setDetections([]);
+                  setIsAnalyzing(false);
+                }}
+              >
+                <UploadIcon className="w-4 h-4 mr-2" />
+                Upload New Video
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground">Generate comprehensive incident reports</p>
           </div>
-        </div>
+        )}
+
+        {/* Info Cards - Show only if no video uploaded */}
+        {!uploadedVideo && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-card border border-border rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                <h4 className="text-sm font-semibold text-foreground">Automated Detection</h4>
+              </div>
+              <p className="text-xs text-muted-foreground">AI analyzes footage for suspicious activity</p>
+            </div>
+
+            <div className="bg-card border border-border rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                <h4 className="text-sm font-semibold text-foreground">Timestamp Extraction</h4>
+              </div>
+              <p className="text-xs text-muted-foreground">Precise event timing and markers</p>
+            </div>
+
+            <div className="bg-card border border-border rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                <h4 className="text-sm font-semibold text-foreground">Detailed Reports</h4>
+              </div>
+              <p className="text-xs text-muted-foreground">Generate comprehensive incident reports</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

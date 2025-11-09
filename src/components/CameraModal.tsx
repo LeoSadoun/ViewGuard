@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import { X, Eye } from "lucide-react";
 import {
   Dialog,
@@ -6,15 +7,38 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Detection } from "./CCTVTile";
+import { usePersonDetection } from "@/hooks/usePersonDetection";
+import { getCurrentVideo, getNextVideo } from "@/config/videoScheduler";
+import { BoundingBoxesOverlay } from "@/components/BoundingBoxesOverlay";
 
 interface CameraModalProps {
   isOpen: boolean;
   onClose: () => void;
   cameraId: number;
   detection: Detection | null;
+  videoSources?: string[];
 }
 
-const CameraModal = ({ isOpen, onClose, cameraId, detection }: CameraModalProps) => {
+const CameraModal = ({ isOpen, onClose, cameraId, detection, videoSources }: CameraModalProps) => {
+  const [currentVideo, setCurrentVideo] = useState(() => getCurrentVideo(cameraId));
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Handle video end - get next unique video from scheduler
+  const handleVideoEnd = () => {
+    const nextVideo = getNextVideo(cameraId);
+    setCurrentVideo(nextVideo);
+  };
+
+  // Update video when camera changes
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentVideo(getCurrentVideo(cameraId));
+    }
+  }, [cameraId, isOpen]);
+
+  // TensorFlow.js disabled - using pre-processed JSON bounding boxes instead
+  const { detections: personDetections } = usePersonDetection(videoRef, false, 200, 0.2);
+
   const getCurrentTime = () => {
     const now = new Date();
     return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
@@ -33,9 +57,15 @@ const CameraModal = ({ isOpen, onClose, cameraId, detection }: CameraModalProps)
         <div className="p-4">
           {/* Expanded Video Feed */}
           <div className="relative aspect-video bg-muted rounded-lg overflow-hidden scanline film-grain mb-4">
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
-              <Eye className="w-24 h-24" />
-            </div>
+            <video
+              ref={videoRef}
+              src={currentVideo}
+              autoPlay
+              muted
+              playsInline
+              onEnded={handleVideoEnd}
+              className="w-full h-full object-cover"
+            />
 
             {/* Timestamp */}
             <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/60 text-xs font-mono text-foreground/80">
@@ -47,10 +77,17 @@ const CameraModal = ({ isOpen, onClose, cameraId, detection }: CameraModalProps)
               CAM {cameraId}
             </div>
 
-            {/* Detection Overlay */}
+            {/* Person Detection Overlays (Green Boxes) - Pre-processed from Python/YOLOv8 */}
+            <BoundingBoxesOverlay
+              videoRef={videoRef}
+              videoSrc={currentVideo}
+              enabled={true}
+            />
+
+            {/* Event Detection Overlay (Red/Orange/Yellow Boxes) */}
             {detection && (
               <div
-                className="absolute border-2 border-alert-high pulse-glow"
+                className="absolute border-2 border-alert-high pulse-glow z-30"
                 style={{
                   left: `${detection.x}%`,
                   top: `${detection.y}%`,

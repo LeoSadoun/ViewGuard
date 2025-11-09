@@ -6,6 +6,8 @@ export interface Notification {
   cameraId: number;
   detection: Detection;
   timestamp: Date;
+  videoUrl?: string;
+  videoTimestamp?: number;
 }
 interface NotificationsPanelProps {
   notifications: Notification[];

@@ -18,47 +18,47 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const location = useLocation();
 
-  // Simulate detection events that run continuously
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Randomly trigger a detection on one camera
-      if (Math.random() < 0.15) {
-        const cameraId = Math.floor(Math.random() * 9) + 1;
-        const detectionTypes: Detection["type"][] = ["THEFT", "FIGHT", "ROBBERY", "FALL", "VANDALISM"];
-        const type = detectionTypes[Math.floor(Math.random() * detectionTypes.length)];
-        if (!type) return;
-        
-        const detection: Detection = {
-          type,
-          confidence: Math.floor(Math.random() * 30) + 70,
-          timestamp: new Date().toLocaleTimeString(),
-          x: Math.random() * 60 + 10,
-          y: Math.random() * 60 + 10,
-          width: Math.random() * 20 + 15,
-          height: Math.random() * 20 + 15
-        };
+  // Disabled: Now using timestamp-based event detection instead of random simulation
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     // Randomly trigger a detection on one camera
+  //     if (Math.random() < 0.15) {
+  //       const cameraId = Math.floor(Math.random() * 9) + 1;
+  //       const detectionTypes: Detection["type"][] = ["THEFT", "FIGHT", "ROBBERY", "FALL", "VANDALISM"];
+  //       const type = detectionTypes[Math.floor(Math.random() * detectionTypes.length)];
+  //       if (!type) return;
+  //
+  //       const detection: Detection = {
+  //         type,
+  //         confidence: Math.floor(Math.random() * 30) + 70,
+  //         timestamp: new Date().toLocaleTimeString(),
+  //         x: Math.random() * 60 + 10,
+  //         y: Math.random() * 60 + 10,
+  //         width: Math.random() * 20 + 15,
+  //         height: Math.random() * 20 + 15
+  //       };
 
-        // Create notification
-        const notification: Notification = {
-          id: `${cameraId}-${Date.now()}`,
-          cameraId,
-          detection,
-          timestamp: new Date()
-        };
-        
-        setNotifications(prev => [notification, ...prev]);
+  //       // Create notification
+  //       const notification: Notification = {
+  //         id: `${cameraId}-${Date.now()}`,
+  //         cameraId,
+  //         detection,
+  //         timestamp: new Date()
+  //       };
+  //
+  //       setNotifications(prev => [notification, ...prev]);
 
-        // Only show toast if not on landing page
-        if (location.pathname !== "/") {
-          toast.error(`Camera ${cameraId} — ${type} detected`, {
-            description: `Confidence: ${detection.confidence}%`
-          });
-        }
-      }
-    }, 5000); // Check every 5 seconds
+  //       // Only show toast if not on landing page
+  //       if (location.pathname !== "/") {
+  //         toast.error(`Camera ${cameraId} — ${type} detected`, {
+  //           description: `Confidence: ${detection.confidence}%`
+  //         });
+  //       }
+  //     }
+  //   }, 5000); // Check every 5 seconds
 
-    return () => clearInterval(interval);
-  }, [location.pathname]);
+  //   return () => clearInterval(interval);
+  // }, [location.pathname]);
 
   const addNotification = (notification: Notification) => {
     setNotifications(prev => [notification, ...prev]);

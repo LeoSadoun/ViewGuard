@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Shield, BarChart3, Video, FileText, Loader2, CheckCircle2, Upload, Radio } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -9,6 +9,8 @@ import NotificationsPanel, { Notification } from "@/components/NotificationsPane
 import CameraModal from "@/components/CameraModal";
 import { useReports } from "@/contexts/ReportsContext";
 import { useNotifications } from "@/contexts/NotificationsContext";
+import { getVideoSources } from "@/config/videoSources";
+import { generateHistoricalTimestamp } from "@/utils/timestampGenerator";
 
 const Index = () => {
   const { addReport } = useReports();
@@ -20,6 +22,29 @@ const Index = () => {
   const [reportStatus, setReportStatus] = useState<"loading" | "success">("loading");
   const [currentReportType, setCurrentReportType] = useState<string>("");
   const onlineCameras = 9; // Simulated online count
+
+  // Handle event detection from video timestamps - useCallback to prevent infinite re-renders
+  const handleEventDetected = useCallback((cameraId: number, detection: Detection, videoUrl: string, videoTimestamp: number) => {
+    // Add notification to the notifications panel (with video info for later review)
+    const notificationId = `event-${Date.now()}-${cameraId}`;
+    addNotification({
+      id: notificationId,
+      cameraId,
+      detection,
+      timestamp: generateHistoricalTimestamp(), // Random historical date 2016-2023, after 5pm, mostly nighttime
+      videoUrl,
+      videoTimestamp,
+    });
+
+    // Highlight camera
+    setHighlightedCamera(cameraId);
+    setTimeout(() => setHighlightedCamera(null), 3000);
+
+    // Show toast notification
+    toast.error(`${detection.type} detected on Camera ${cameraId}`, {
+      description: `Confidence: ${detection.confidence}%`,
+    });
+  }, [addNotification]);
 
   // Listen to new notifications and update detections display
   useEffect(() => {
@@ -57,17 +82,19 @@ const Index = () => {
       setCurrentReportType(notification.detection.type);
       setReportStatus("loading");
       setReportDialogOpen(true);
-      
+
       setTimeout(() => {
         addReport({
           id: notification.id,
           cameraId: notification.cameraId,
           detection: notification.detection,
-          timestamp: notification.timestamp
+          timestamp: notification.timestamp,
+          videoUrl: notification.videoUrl,
+          videoTimestamp: notification.videoTimestamp
         });
         removeNotification(id);
         setReportStatus("success");
-        
+
         setTimeout(() => {
           setReportDialogOpen(false);
           toast.success(`${notification.detection.type} reported`);
@@ -140,7 +167,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({
             length: 9
-          }, (_, i) => i + 1).map(cameraId => <CCTVTile key={cameraId} cameraId={cameraId} detection={detections[cameraId] || null} onExpand={() => setExpandedCamera(cameraId)} isHighlighted={highlightedCamera === cameraId} />)}
+          }, (_, i) => i + 1).map(cameraId => <CCTVTile key={cameraId} cameraId={cameraId} detection={detections[cameraId] || null} onExpand={() => setExpandedCamera(cameraId)} isHighlighted={highlightedCamera === cameraId} videoSources={getVideoSources(cameraId)} onEventDetected={handleEventDetected} />)}
           </div>
         </div>
 
@@ -163,7 +190,7 @@ const Index = () => {
         </aside>
       </div>
 
-      {expandedCamera && <CameraModal isOpen={!!expandedCamera} onClose={() => setExpandedCamera(null)} cameraId={expandedCamera} detection={detections[expandedCamera] || null} />}
+      {expandedCamera && <CameraModal isOpen={!!expandedCamera} onClose={() => setExpandedCamera(null)} cameraId={expandedCamera} detection={detections[expandedCamera] || null} videoSources={getVideoSources(expandedCamera)} />}
       
       {/* Report Dialog */}
       <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>

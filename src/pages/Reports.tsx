@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Shield, BarChart3, FileText, Clock, AlertTriangle, Play, Upload, Radio } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
 const Reports = () => {
   const { reports } = useReports();
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const getDetectionColor = (type: string) => {
     const colors: Record<string, string> = {
@@ -44,6 +45,29 @@ const Reports = () => {
       minute: '2-digit',
     });
   };
+
+  // When a report is selected, set up the video clip looping
+  useEffect(() => {
+    if (selectedReport && selectedReport.videoTimestamp !== undefined && videoRef.current) {
+      const video = videoRef.current;
+      const startTime = Math.max(0, selectedReport.videoTimestamp - 5);
+      const endTime = selectedReport.videoTimestamp + 20;
+
+      // Stop video after 25 seconds total (5 before + 20 after) and loop
+      const handleTimeUpdate = () => {
+        if (video.currentTime >= endTime) {
+          video.pause();
+          video.currentTime = startTime; // Reset to start for replay
+        }
+      };
+
+      video.addEventListener('timeupdate', handleTimeUpdate);
+
+      return () => {
+        video.removeEventListener('timeupdate', handleTimeUpdate);
+      };
+    }
+  }, [selectedReport]);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 cyber-bg">
@@ -196,47 +220,47 @@ const Reports = () => {
           <div className="space-y-4">
             {/* Video Player */}
             <div className="relative aspect-video bg-black rounded-lg overflow-hidden border border-border">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
-              
-              {/* Simulated Video Feed with detection box */}
-              <div className="relative w-full h-full bg-black/80 flex items-center justify-center">
-                <div className="absolute inset-0 opacity-40">
-                  <div className="grid grid-cols-8 grid-rows-6 w-full h-full">
-                    {Array.from({ length: 48 }).map((_, i) => (
-                      <div key={i} className="border border-primary/10" />
-                    ))}
-                  </div>
-                </div>
-                
-                {selectedReport?.detection && (
-                  <div
-                    className="absolute border-2 border-destructive animate-pulse"
-                    style={{
-                      left: `${selectedReport.detection.x}%`,
-                      top: `${selectedReport.detection.y}%`,
-                      width: `${selectedReport.detection.width}%`,
-                      height: `${selectedReport.detection.height}%`,
+              {selectedReport?.videoUrl ? (
+                <>
+                  {/* Actual Video */}
+                  <video
+                    ref={videoRef}
+                    src={selectedReport.videoUrl}
+                    className="w-full h-full object-cover"
+                    controls
+                    playsInline
+                    onLoadedMetadata={(e) => {
+                      const video = e.currentTarget;
+                      if (selectedReport.videoTimestamp !== undefined) {
+                        const startTime = Math.max(0, selectedReport.videoTimestamp - 5);
+                        console.log('📹 [Reports] Video metadata loaded, seeking to', startTime);
+                        video.currentTime = startTime;
+                        video.play().catch(err => console.log('Autoplay prevented:', err));
+                      }
                     }}
-                  >
-                    <div className="absolute -top-6 left-0 bg-destructive text-destructive-foreground px-2 py-1 text-xs font-bold rounded">
-                      {selectedReport.detection.type}
-                    </div>
+                  />
+
+                  {/* Video timestamp overlay */}
+                  <div className="absolute top-4 left-4 bg-black/80 px-3 py-1 rounded text-xs font-mono text-primary border border-primary/30 z-20">
+                    Event at {selectedReport.videoTimestamp?.toFixed(1)}s
                   </div>
-                )}
-                
-                <div className="text-center space-y-2">
-                  <Play className="w-16 h-16 text-primary/50 mx-auto" />
-                  <p className="text-muted-foreground text-sm">Recording from incident</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatTimestamp(selectedReport?.timestamp || new Date())}
-                  </p>
+
+                  {/* Playback info */}
+                  <div className="absolute bottom-16 left-4 bg-black/80 px-3 py-1 rounded text-xs font-mono text-green-400 border border-green-400/30 z-20">
+                    📹 Showing 5s before → 20s after event
+                  </div>
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-black/80">
+                  <div className="text-center space-y-2">
+                    <Play className="w-16 h-16 text-primary/50 mx-auto" />
+                    <p className="text-muted-foreground text-sm">No video footage available</p>
+                    <p className="text-xs text-muted-foreground">
+                      This incident was detected but video footage wasn't saved
+                    </p>
+                  </div>
                 </div>
-              </div>
-              
-              {/* Video timestamp overlay */}
-              <div className="absolute top-4 left-4 bg-black/80 px-3 py-1 rounded text-xs font-mono text-primary border border-primary/30">
-                {selectedReport?.detection.timestamp}
-              </div>
+              )}
             </div>
 
             {/* Report Details */}
