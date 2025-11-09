@@ -15,7 +15,9 @@ export interface RecordingMetadata {
     type: string;
     timestamp: number;
     confidence: number;
+    description?: string;
   }>;
+  transcript?: string; // Audio transcript from Web Speech API
   blob: Blob;
 }
 

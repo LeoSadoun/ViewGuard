@@ -25,12 +25,14 @@ const Realtime = () => {
 
   const [isRecording, setIsRecording] = useState(false);
   const [recordingStartTime, setRecordingStartTime] = useState<number>(0);
+  const recordingStartTimeRef = useRef<number>(0); // Ref for accurate duration calculation
   const [currentRecordingId, setCurrentRecordingId] = useState<string>('');
 
   // Detection state
   const [phase1Enabled, setPhase1Enabled] = useState(true);
   const [phase2Enabled, setPhase2Enabled] = useState(false);
   const [detections, setDetections] = useState<DetectionEvent[]>([]);
+  const detectionsRef = useRef<DetectionEvent[]>([]); // Ref for accessing current detections in callbacks
   const [poseDetector, setPoseDetector] = useState<poseDetection.PoseDetector | null>(null);
   const detectionManagerRef = useRef<Phase1DetectionManager>(new Phase1DetectionManager(DEFAULT_DETECTION_CONFIG));
 
@@ -38,6 +40,11 @@ const Realtime = () => {
   const [savedRecordings, setSavedRecordings] = useState<RecordingMetadata[]>([]);
   const [selectedRecording, setSelectedRecording] = useState<RecordingMetadata | null>(null);
   const [playbackTime, setPlaybackTime] = useState(0);
+
+  // Audio transcript state (Web Speech API)
+  const [audioTranscript, setAudioTranscript] = useState<string>('');
+  const recognitionRef = useRef<any>(null); // SpeechRecognition instance
+  const finalTranscriptRef = useRef<string>(''); // Store only final transcripts for saving
 
   // Initialize TensorFlow and pose detection model
   useEffect(() => {
@@ -103,6 +110,89 @@ const Realtime = () => {
       const stream = videoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach(track => track.stop());
       videoRef.current.srcObject = null;
+    }
+  };
+
+  // Initialize Web Speech API for audio transcription
+  const initSpeechRecognition = () => {
+    try {
+      // Check for browser support (Chrome/Edge)
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        console.warn('⚠️ Speech Recognition not supported in this browser');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true; // Keep listening
+      recognition.interimResults = true; // Get interim results for real-time updates
+      recognition.lang = 'en-US';
+
+      // Update transcript as speech is detected
+      recognition.onresult = (event: any) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        // Collect all results (both interim and final)
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        // Accumulate final transcripts in ref (for saving)
+        if (finalTranscript) {
+          finalTranscriptRef.current += finalTranscript;
+          console.log('🎤 Final speech saved:', finalTranscript);
+        }
+
+        // Display both final and interim transcripts in UI
+        const displayTranscript = finalTranscriptRef.current + interimTranscript;
+        setAudioTranscript(displayTranscript);
+
+        if (interimTranscript) {
+          console.log('🎤 Interim speech (showing but not saved):', interimTranscript);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('⚠️ Speech recognition error:', event.error);
+      };
+
+      recognition.onend = () => {
+        // Restart if still recording
+        if (isRecording) {
+          try {
+            recognition.start();
+            console.log('🔄 Speech recognition restarted');
+          } catch (err) {
+            console.warn('⚠️ Could not restart speech recognition:', err);
+          }
+        }
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+      console.log('✅ Speech recognition started');
+    } catch (err) {
+      console.warn('⚠️ Failed to initialize speech recognition:', err);
+    }
+  };
+
+  // Stop speech recognition
+  const stopSpeechRecognition = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+        console.log('⏹️ Speech recognition stopped');
+      } catch (err) {
+        console.warn('⚠️ Error stopping speech recognition:', err);
+      }
     }
   };
 
@@ -175,7 +265,11 @@ const Realtime = () => {
           explanation: data.analysis.explanation
         };
 
-        setDetections(prev => [...prev, detection]);
+        setDetections(prev => {
+          const updated = [...prev, detection];
+          detectionsRef.current = updated;
+          return updated;
+        });
 
         toast.error(`Phase 2: ${detection.description}`, {
           description: detection.explanation
@@ -301,7 +395,11 @@ const Realtime = () => {
           }
 
           if (newDetections.length > 0) {
-            setDetections(prev => [...prev, ...newDetections]);
+            setDetections(prev => {
+              const updated = [...prev, ...newDetections];
+              detectionsRef.current = updated;
+              return updated;
+            });
 
             newDetections.forEach(detection => {
               console.log('🚨 Detection:', detection.type, detection.description);
@@ -354,6 +452,11 @@ const Realtime = () => {
     }
 
     try {
+      // Reset and start speech recognition
+      finalTranscriptRef.current = '';
+      setAudioTranscript('');
+      initSpeechRecognition();
+
       const stream = videoRef.current.srcObject as MediaStream;
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'video/webm;codecs=vp9'
@@ -369,19 +472,30 @@ const Realtime = () => {
 
       mediaRecorder.onstop = async () => {
         const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
-        const duration = (Date.now() - recordingStartTime) / 1000;
+        const duration = (Date.now() - recordingStartTimeRef.current) / 1000;
+
+        console.log('🎬 Saving recording with detections:', detectionsRef.current);
+        console.log('🎬 Duration:', duration, 'seconds');
 
         const recording: RecordingMetadata = {
           id: currentRecordingId,
-          timestamp: new Date(recordingStartTime),
+          timestamp: new Date(recordingStartTimeRef.current),
           duration,
-          events: detections.map(d => ({
+          events: detectionsRef.current.map(d => ({
             type: d.type === 'vlm_detection' ? 'vlm_detection' : d.type,
             timestamp: d.timestamp,
-            confidence: d.confidence
+            confidence: d.confidence,
+            description: d.description
           })),
+          transcript: finalTranscriptRef.current || 'No speech detected',
           blob
         };
+
+        console.log('🎬 Recording object:', {
+          ...recording,
+          blob: `Blob(${blob.size} bytes)`,
+          events: recording.events
+        });
 
         await videoStorage.saveRecording(recording);
 
@@ -395,10 +509,13 @@ const Realtime = () => {
       mediaRecorderRef.current = mediaRecorder;
 
       const recordingId = `recording-${Date.now()}`;
+      const startTime = Date.now();
       setCurrentRecordingId(recordingId);
-      setRecordingStartTime(Date.now());
+      setRecordingStartTime(startTime);
+      recordingStartTimeRef.current = startTime; // Set ref for accurate duration
       setIsRecording(true);
       setDetections([]);
+      detectionsRef.current = []; // Also reset ref
       detectionManagerRef.current.reset();
 
       toast.success('Recording started');
@@ -413,12 +530,24 @@ const Realtime = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+
+      // Stop speech recognition
+      stopSpeechRecognition();
+
       toast.info('Recording stopped');
     }
   };
 
   // Play saved recording
   const playRecording = (recording: RecordingMetadata) => {
+    console.log('▶️ Playing recording:', {
+      id: recording.id,
+      duration: recording.duration,
+      eventsCount: recording.events.length,
+      events: recording.events,
+      hasTranscript: !!recording.transcript
+    });
+
     setSelectedRecording(recording);
 
     if (videoRef.current) {
@@ -429,11 +558,15 @@ const Realtime = () => {
       videoRef.current.play();
     }
 
-    setDetections(recording.events.map(e => ({
+    const mappedDetections = recording.events.map(e => ({
       ...e,
-      description: `${e.type} detection`,
+      description: e.description || `${e.type} detection`,
       ...(e.type === 'vlm_detection' ? { category: 'unknown', explanation: '' } : { keypoints: [] })
-    } as DetectionEvent)));
+    } as DetectionEvent));
+
+    console.log('▶️ Mapped detections:', mappedDetections);
+    setDetections(mappedDetections);
+    detectionsRef.current = mappedDetections; // Also update ref
   };
 
   // Delete recording
@@ -629,6 +762,78 @@ const Realtime = () => {
                   }}
                 />
               )}
+
+              {/* Audio Transcript (during recording) */}
+              {isRecording && (
+                <div className="mt-4 p-4 bg-slate-800 rounded-lg border border-slate-700">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-slate-300 text-sm font-medium">🎤 Audio Transcript:</span>
+                    {recognitionRef.current && (
+                      <span className="text-green-400 text-xs animate-pulse">● LISTENING</span>
+                    )}
+                  </div>
+                  <ScrollArea className="h-24 w-full">
+                    <p className="text-white text-sm font-mono whitespace-pre-wrap">
+                      {audioTranscript || "No speech detected..."}
+                    </p>
+                  </ScrollArea>
+                  <p className="text-xs text-slate-500 mt-2">
+                    Audio is captured during recording and saved with the video
+                  </p>
+                </div>
+              )}
+
+              {/* Detected Events List (during playback) */}
+              {selectedRecording && selectedRecording.events.length > 0 && (
+                <div className="mt-4 p-4 bg-slate-800 rounded-lg border border-slate-700">
+                  <h3 className="text-slate-300 text-sm font-medium mb-3">⚠️ Detected Events - Click to Jump to Timestamp</h3>
+                  <ScrollArea className="h-48 w-full">
+                    <div className="space-y-2">
+                      {selectedRecording.events.map((event, index) => (
+                        <div
+                          key={index}
+                          onClick={() => {
+                            if (videoRef.current) {
+                              const seekTime = Math.max(0, event.timestamp - 1);
+                              videoRef.current.currentTime = seekTime;
+                            }
+                          }}
+                          className="p-3 bg-slate-700 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-600 transition-colors"
+                        >
+                          <div className="flex items-start justify-between mb-1">
+                            <span className="text-white text-sm font-medium capitalize">
+                              {event.type.replace('_', ' ')}
+                            </span>
+                            <span className="text-slate-400 text-xs">
+                              {event.timestamp.toFixed(1)}s
+                            </span>
+                          </div>
+                          {event.description && (
+                            <p className="text-slate-300 text-xs">
+                              {event.description}
+                            </p>
+                          )}
+                          <div className="text-slate-400 text-xs mt-1">
+                            Confidence: {(event.confidence * 100).toFixed(0)}%
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
+
+              {/* Audio Transcript (during playback) */}
+              {selectedRecording && selectedRecording.transcript && (
+                <div className="mt-4 p-4 bg-slate-800 rounded-lg border border-slate-700">
+                  <h3 className="text-slate-300 text-sm font-medium mb-2">🎤 Recorded Audio Transcript:</h3>
+                  <ScrollArea className="h-32 w-full">
+                    <p className="text-white text-sm font-mono whitespace-pre-wrap">
+                      {selectedRecording.transcript}
+                    </p>
+                  </ScrollArea>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -690,7 +895,17 @@ const Realtime = () => {
                     detections.map((detection, index) => (
                       <div
                         key={index}
-                        className="border border-border rounded-lg p-3 space-y-1"
+                        onClick={() => {
+                          if (videoRef.current && selectedRecording) {
+                            // Seek 1 second before event for context
+                            const seekTime = Math.max(0, detection.timestamp - 1);
+                            videoRef.current.currentTime = seekTime;
+                          }
+                        }}
+                        className={`border border-border rounded-lg p-3 space-y-1 ${
+                          selectedRecording ? 'cursor-pointer hover:bg-slate-700 transition-colors' : ''
+                        }`}
+                        title={selectedRecording ? `Click to jump to ${detection.timestamp.toFixed(1)}s` : ''}
                       >
                         <div className="flex items-start justify-between">
                           <span className="text-sm font-medium capitalize">
