@@ -57,9 +57,11 @@ AI-powered CCTV monitoring dashboard with real-time threat detection.
 ## Tech Stack
 
 - **React** + **TypeScript**
+- **Vite** — Fast development server and build tool
 - **Tailwind CSS** with custom design tokens
 - **shadcn/ui** components
 - **Lucide React** icons
+- **TensorFlow.js** — Real-time person detection with COCO-SSD
 
 ## Design System
 
@@ -79,10 +81,25 @@ AI-powered CCTV monitoring dashboard with real-time threat detection.
 
 ## Development
 
+The frontend is built with **Vite**, a modern development server and build tool that provides fast hot module replacement (HMR) and optimized production builds.
+
+### Getting Started
+
 ```bash
+# Install dependencies
 npm install
+
+# Launch the frontend development server (runs on http://localhost:8080)
 npm run dev
 ```
+
+### Available Commands
+
+- `npm run dev` — Start Vite development server on port 8080
+- `npm run build` — Build for production
+- `npm run build:dev` — Build for development mode
+- `npm run preview` — Preview production build locally
+- `npm run lint` — Run ESLint code linting
 
 ## License
 
