@@ -57,9 +57,11 @@ AI-powered CCTV monitoring dashboard with real-time threat detection.
 ## Tech Stack
 
 - **React** + **TypeScript**
+- **Vite** — Fast development server and build tool
 - **Tailwind CSS** with custom design tokens
 - **shadcn/ui** components
 - **Lucide React** icons
+- **TensorFlow.js** — Real-time person detection with COCO-SSD
 
 ## Design System
 
@@ -79,10 +81,38 @@ AI-powered CCTV monitoring dashboard with real-time threat detection.
 
 ## Development
 
+The frontend is built with **Vite**, a modern development server and build tool that provides fast hot module replacement (HMR) and optimized production builds.
+
+### Getting Started
+
 ```bash
+# Install dependencies
 npm install
+
+# Launch the frontend development server (runs on http://localhost:8080)
 npm run dev
 ```
+
+### Available Commands
+
+- `npm run dev` — Start Vite development server on port 8080
+- `npm run build` — Build for production
+- `npm run build:dev` — Build for development mode
+- `npm run preview` — Preview production build locally
+- `npm run lint` — Run ESLint code linting
+
+## Deployment
+
+The application is automatically deployed to [https://viewguard.miami/](https://viewguard.miami/) via GitHub Pages using GitHub Actions.
+
+### GitHub Pages Setup
+
+The site uses a GitHub Actions workflow (`.github/workflows/deploy.yml`) that:
+- Automatically builds the Vite app on every push to `main` or `frontend` branches
+- Deploys the built files to GitHub Pages
+- Supports the custom domain `viewguard.miami` (configured via `CNAME` file)
+
+The deployment happens automatically when changes are merged to the main or frontend branch. No manual deployment steps are required.
 
 ## License
 
