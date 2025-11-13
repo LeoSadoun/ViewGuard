@@ -101,6 +101,19 @@ npm run dev
 - `npm run preview` — Preview production build locally
 - `npm run lint` — Run ESLint code linting
 
+## Deployment
+
+The application is automatically deployed to [https://viewguard.miami/](https://viewguard.miami/) via GitHub Pages using GitHub Actions.
+
+### GitHub Pages Setup
+
+The site uses a GitHub Actions workflow (`.github/workflows/deploy.yml`) that:
+- Automatically builds the Vite app on every push to `main` or `frontend` branches
+- Deploys the built files to GitHub Pages
+- Supports the custom domain `viewguard.miami` (configured via `CNAME` file)
+
+The deployment happens automatically when changes are merged to the main or frontend branch. No manual deployment steps are required.
+
 ## License
 
 MIT
